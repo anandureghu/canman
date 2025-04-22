@@ -6,6 +6,7 @@ import 'package:canman/layout/layout_scaffold.dart';
 import 'package:canman/pages/customers_page.dart';
 import 'package:canman/pages/supply_page.dart';
 import 'package:canman/pages/distribute_page.dart';
+import 'package:canman/pages/customer_add_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -55,6 +56,10 @@ final router = GoRouter(
       builder:
           (context, state) =>
               CustomerDetailPage(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: Routes.addCustomerPage,
+      builder: (context, state) => const AddCustomerPage(),
     ),
   ],
 );
