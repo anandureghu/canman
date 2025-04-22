@@ -218,4 +218,93 @@ class FirebaseService {
       throw Exception('Failed to update supplier: $e');
     }
   }
+
+  Future<void> addDistribute({
+    required String name,
+    required String phone,
+    required int distributeCount,
+    required String location,
+  }) async {
+    try {
+      final docRef = _firestore.collection('distributes').doc();
+      final timestamp = FieldValue.serverTimestamp();
+
+      final distributeData = {
+        'id': docRef.id,
+        'name': name,
+        'phone': phone,
+        'distributeCount': distributeCount,
+        'location': location,
+        'createdAt': timestamp,
+        'updatedAt': timestamp,
+        'syncStatus': 'pending',
+      };
+
+      await docRef.set(distributeData);
+
+      await docRef.update({'syncStatus': 'synced'}).catchError((e) {
+        if (kDebugMode) {
+          print("Failed to update sync status: $e");
+        }
+      });
+    } catch (e) {
+      throw Exception('Failed to add distribute: $e');
+    }
+  }
+
+  Stream<QuerySnapshot> getDistributes() {
+    return _firestore
+        .collection('distributes')
+        .orderBy('updatedAt', descending: true)
+        .snapshots();
+  }
+
+  Future<bool> isDistributePhoneExists(String phone) async {
+    try {
+      final querySnapshot =
+          await _firestore
+              .collection('distributes')
+              .where('phone', isEqualTo: phone)
+              .limit(1)
+              .get();
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Failed to check distribute phone number: $e");
+      }
+      return false;
+    }
+  }
+
+  Future<void> updateDistribute({
+    required String distributeId,
+    String? name,
+    String? phone,
+    int? distributeCount,
+    String? location,
+  }) async {
+    try {
+      final docRef = _firestore.collection('distributes').doc(distributeId);
+
+      final updates = <String, dynamic>{
+        'updatedAt': FieldValue.serverTimestamp(),
+        'syncStatus': 'pending',
+      };
+
+      if (name != null) updates['name'] = name;
+      if (phone != null) updates['phone'] = phone;
+      if (distributeCount != null) updates['distributeCount'] = distributeCount;
+      if (location != null) updates['location'] = location;
+
+      await docRef.update(updates);
+
+      await docRef.update({'syncStatus': 'synced'}).catchError((e) {
+        if (kDebugMode) {
+          print("Failed to update sync status: $e");
+        }
+      });
+    } catch (e) {
+      throw Exception('Failed to update distribute: $e');
+    }
+  }
 }
