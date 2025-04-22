@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:canman/components/input_field.dart';
 import 'package:canman/services/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:canman/components/input_field.dart';
 
-class SupplierEditPage extends StatefulWidget {
+class DistributeEditPage extends StatefulWidget {
   final String id;
 
-  const SupplierEditPage({super.key, required this.id});
+  const DistributeEditPage({super.key, required this.id});
 
   @override
-  State<SupplierEditPage> createState() => _SupplierEditPageState();
+  State<DistributeEditPage> createState() => _DistributeEditPageState();
 }
 
-class _SupplierEditPageState extends State<SupplierEditPage> {
+class _DistributeEditPageState extends State<DistributeEditPage> {
   final _firebaseService = FirebaseService();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _locationController = TextEditingController();
   final _countController = TextEditingController();
   bool _isLoading = false;
   bool _isInitialized = false;
@@ -25,9 +26,10 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
 
   String? _nameError;
   String? _phoneError;
+  String? _locationError;
   String? _countError;
 
-  Future<void> _loadSupplierData() async {
+  Future<void> _loadDistributeData() async {
     if (_isInitialized) return;
 
     setState(() => _isLoading = true);
@@ -35,30 +37,31 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
     try {
       final doc =
           await FirebaseFirestore.instance
-              .collection('suppliers')
+              .collection('distributes')
               .doc(widget.id)
               .get();
 
       if (!doc.exists) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Supplier not found')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Distributor not found')),
+          );
           context.pop();
         }
         return;
       }
 
-      final supplier = doc.data()!;
-      _nameController.text = supplier['name'];
-      _phoneController.text = supplier['phone'];
-      _countController.text = supplier['supplyCount'].toString();
+      final distribute = doc.data()!;
+      _nameController.text = distribute['name'];
+      _phoneController.text = distribute['phone'];
+      _locationController.text = distribute['location'];
+      _countController.text = distribute['distributeCount'].toString();
       _isInitialized = true;
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading supplier: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading distributor: $e')),
+        );
       }
     } finally {
       if (mounted) {
@@ -101,7 +104,7 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
         setState(() {
           _isValidatingPhone = false;
           if (exists && value != _phoneController.text) {
-            _phoneError = 'A supplier with this phone number already exists';
+            _phoneError = 'A distributor with this phone number already exists';
           }
         });
       }
@@ -117,7 +120,7 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
 
   void _validateCount(String value) {
     if (value.isEmpty) {
-      setState(() => _countError = 'Supply count is required');
+      setState(() => _countError = 'Distribution count is required');
     } else if (int.tryParse(value) == null) {
       setState(() => _countError = 'Please enter a valid number');
     } else if (int.parse(value) <= 0) {
@@ -133,33 +136,42 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
       'Name',
       (error) => setState(() => _nameError = error),
     );
+    _validateField(
+      _locationController.text,
+      'Location',
+      (error) => setState(() => _locationError = error),
+    );
     _validatePhone(_phoneController.text);
     _validateCount(_countController.text);
 
-    return _nameError == null && _phoneError == null && _countError == null;
+    return _nameError == null &&
+        _phoneError == null &&
+        _locationError == null &&
+        _countError == null;
   }
 
   Future<void> _handleSubmit() async {
     if (_isFormValid()) {
       setState(() => _isLoading = true);
       try {
-        await _firebaseService.updateSupplier(
-          supplierId: widget.id,
+        await _firebaseService.updateDistribute(
+          distributeId: widget.id,
           name: _nameController.text,
           phone: _phoneController.text,
-          supplyCount: int.parse(_countController.text),
+          location: _locationController.text,
+          distributeCount: int.parse(_countController.text),
         );
         if (mounted) {
           context.pop();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Supplier updated successfully')),
+            const SnackBar(content: Text('Distributor updated successfully')),
           );
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to update supplier: $e'),
+              content: Text('Failed to update distributor: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -176,13 +188,14 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
+    _locationController.dispose();
     _countController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    _loadSupplierData();
+    _loadDistributeData();
 
     return Scaffold(
       body: SafeArea(
@@ -232,7 +245,7 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Edit Supplier',
+                            'Edit Distributor',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
@@ -241,7 +254,7 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
                           const SizedBox(height: 24),
                           InputField(
                             label: 'Name',
-                            hintText: 'Enter supplier name',
+                            hintText: 'Enter distributor name',
                             controller: _nameController,
                             isRequired: true,
                             errorText: _nameError,
@@ -276,8 +289,22 @@ class _SupplierEditPageState extends State<SupplierEditPage> {
                                     : null,
                           ),
                           InputField(
-                            label: 'Supply Count',
-                            hintText: 'Enter supply count',
+                            label: 'Location',
+                            hintText: 'Enter location',
+                            controller: _locationController,
+                            isRequired: true,
+                            errorText: _locationError,
+                            onChanged:
+                                (value) => _validateField(
+                                  value,
+                                  'Location',
+                                  (error) =>
+                                      setState(() => _locationError = error),
+                                ),
+                          ),
+                          InputField(
+                            label: 'Distribution Count',
+                            hintText: 'Enter distribution count',
                             controller: _countController,
                             keyboardType: TextInputType.number,
                             inputFormatters: [
