@@ -13,7 +13,12 @@ class CustomersPage extends StatelessWidget {
         SearchContainer(),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
-          children: [TextButton(onPressed: () {}, child: Text('Add Customer'))],
+          children: [
+            TextButton(
+              onPressed: () => context.push(Routes.addCustomerPage),
+              child: Text('Add Customer'),
+            ),
+          ],
         ),
         Expanded(
           child: ListView.builder(
@@ -77,9 +82,9 @@ class _SearchContainerState extends State<SearchContainer> {
         ElevatedButton(
           onPressed: _handleSearch,
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(Colors.blue.shade800),
-            foregroundColor: MaterialStateProperty.all(Colors.white),
-            shape: MaterialStateProperty.all(
+            backgroundColor: WidgetStateProperty.all(Colors.blue.shade800),
+            foregroundColor: WidgetStateProperty.all(Colors.white),
+            shape: WidgetStateProperty.all(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
             ),
           ),
