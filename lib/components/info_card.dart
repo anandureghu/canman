@@ -4,12 +4,14 @@ class InfoCard extends StatelessWidget {
   final String id;
   final String title;
   final String subtitle;
+  final int? count;
 
   const InfoCard({
     super.key,
     required this.id,
     required this.title,
     required this.subtitle,
+    this.count,
   });
 
   @override
@@ -61,6 +63,27 @@ class InfoCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (count != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    count.toString(),
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
               Icon(Icons.chevron_right, color: Colors.grey.shade400),
             ],
           ),

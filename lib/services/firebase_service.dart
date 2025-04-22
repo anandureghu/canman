@@ -133,4 +133,89 @@ class FirebaseService {
       return false;
     }
   }
+
+  Future<void> addSupplier({
+    required String name,
+    required String phone,
+    required int supplyCount,
+  }) async {
+    try {
+      final docRef = _firestore.collection('suppliers').doc();
+      final timestamp = FieldValue.serverTimestamp();
+
+      final supplierData = {
+        'id': docRef.id,
+        'name': name,
+        'phone': phone,
+        'supplyCount': supplyCount,
+        'createdAt': timestamp,
+        'updatedAt': timestamp,
+        'syncStatus': 'pending',
+      };
+
+      await docRef.set(supplierData);
+
+      await docRef.update({'syncStatus': 'synced'}).catchError((e) {
+        if (kDebugMode) {
+          print("Failed to update sync status: $e");
+        }
+      });
+    } catch (e) {
+      throw Exception('Failed to add supplier: $e');
+    }
+  }
+
+  Stream<QuerySnapshot> getSuppliers() {
+    return _firestore
+        .collection('suppliers')
+        .orderBy('updatedAt', descending: true)
+        .snapshots();
+  }
+
+  Future<bool> isSupplierPhoneExists(String phone) async {
+    try {
+      final querySnapshot =
+          await _firestore
+              .collection('suppliers')
+              .where('phone', isEqualTo: phone)
+              .limit(1)
+              .get();
+      return querySnapshot.docs.isNotEmpty;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Failed to check supplier phone number: $e");
+      }
+      return false;
+    }
+  }
+
+  Future<void> updateSupplier({
+    required String supplierId,
+    String? name,
+    String? phone,
+    int? supplyCount,
+  }) async {
+    try {
+      final docRef = _firestore.collection('suppliers').doc(supplierId);
+
+      final updates = <String, dynamic>{
+        'updatedAt': FieldValue.serverTimestamp(),
+        'syncStatus': 'pending',
+      };
+
+      if (name != null) updates['name'] = name;
+      if (phone != null) updates['phone'] = phone;
+      if (supplyCount != null) updates['supplyCount'] = supplyCount;
+
+      await docRef.update(updates);
+
+      await docRef.update({'syncStatus': 'synced'}).catchError((e) {
+        if (kDebugMode) {
+          print("Failed to update sync status: $e");
+        }
+      });
+    } catch (e) {
+      throw Exception('Failed to update supplier: $e');
+    }
+  }
 }
