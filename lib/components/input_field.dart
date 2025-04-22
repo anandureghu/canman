@@ -12,6 +12,7 @@ class InputField extends StatelessWidget {
   final String? helperText;
   final void Function(String)? onChanged;
   final Widget? suffix;
+  final TextCapitalization textCapitalization;
 
   const InputField({
     super.key,
@@ -25,6 +26,7 @@ class InputField extends StatelessWidget {
     this.helperText,
     this.onChanged,
     this.suffix,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   @override
@@ -59,6 +61,7 @@ class InputField extends StatelessWidget {
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           onChanged: onChanged,
+          textCapitalization: textCapitalization,
           decoration: InputDecoration(
             hintText: hintText,
             errorText: errorText,
