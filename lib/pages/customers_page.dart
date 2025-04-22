@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:canman/router/routes.dart';
 import 'package:go_router/go_router.dart';
+import 'package:canman/services/firebase_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:canman/components/info_card.dart';
 
 class CustomersPage extends StatelessWidget {
   const CustomersPage({super.key});
@@ -10,20 +13,53 @@ class CustomersPage extends StatelessWidget {
     return Column(
       spacing: 10.0,
       children: [
-        SearchContainer(),
+        const SearchContainer(),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             TextButton(
               onPressed: () => context.push(Routes.addCustomerPage),
-              child: Text('Add Customer'),
+              child: const Text('Add Customer'),
             ),
           ],
         ),
         Expanded(
-          child: ListView.builder(
-            itemCount: 20,
-            itemBuilder: (context, index) => CustomerCard(index: index + 1),
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseService().getCustomers(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final customers = snapshot.data?.docs ?? [];
+
+              if (customers.isEmpty) {
+                return const Center(child: Text('No customers found'));
+              }
+
+              return ListView.builder(
+                itemCount: customers.length,
+                itemBuilder: (context, index) {
+                  final customer =
+                      customers[index].data() as Map<String, dynamic>;
+                  return GestureDetector(
+                    onTap:
+                        () => context.push(
+                          Routes.getCustomerDetailPageWithId(customer['id']),
+                        ),
+                    child: InfoCard(
+                      id: customer['id'],
+                      title: customer['name'],
+                      subtitle: customer['phone'],
+                    ),
+                  );
+                },
+              );
+            },
           ),
         ),
       ],
@@ -94,63 +130,6 @@ class _SearchContainerState extends State<SearchContainer> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class CustomerCard extends StatelessWidget {
-  final int index;
-  const CustomerCard({super.key, required this.index});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: GestureDetector(
-        onTap:
-            () => context.push(
-              Routes.getCustomerDetailPageWithId(index.toString()),
-            ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              spacing: 10.0,
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage('assets/images/avatar.png'),
-                  backgroundColor: Colors.grey.shade200,
-                  child: Text(
-                    'C$index',
-                    style: TextStyle(color: Colors.black26, fontSize: 12),
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Customer $index',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      'Customer Phone',
-                      style: TextStyle(color: Colors.black45, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

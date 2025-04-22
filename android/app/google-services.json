@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1074151390613",
+    "project_id": "canman-6295",
+    "storage_bucket": "canman-6295.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1074151390613:android:8b6ebe952f45aaf13bca9c",
+        "android_client_info": {
+          "package_name": "com.example.canman"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPCscD6WGauxE38w3eXdWCwA4nWnX08eI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

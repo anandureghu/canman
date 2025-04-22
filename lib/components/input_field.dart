@@ -11,6 +11,7 @@ class InputField extends StatelessWidget {
   final String? errorText;
   final String? helperText;
   final void Function(String)? onChanged;
+  final Widget? suffix;
 
   const InputField({
     super.key,
@@ -23,6 +24,7 @@ class InputField extends StatelessWidget {
     this.errorText,
     this.helperText,
     this.onChanged,
+    this.suffix,
   });
 
   @override
@@ -64,6 +66,7 @@ class InputField extends StatelessWidget {
               horizontal: 16,
               vertical: 12,
             ),
+            suffixIcon: suffix,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey.shade300),

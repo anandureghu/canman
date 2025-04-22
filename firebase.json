@@ -1,0 +1,21 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "canman-6295",
+          "appId": "1:1074151390613:android:8b6ebe952f45aaf13bca9c",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "canman-6295",
+          "configurations": {
+            "android": "1:1074151390613:android:8b6ebe952f45aaf13bca9c"
+          }
+        }
+      }
+    }
+  }
+}

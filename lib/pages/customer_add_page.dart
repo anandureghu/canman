@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:canman/components/input_field.dart';
+import 'package:canman/services/firebase_service.dart';
 
 class AddCustomerPage extends StatefulWidget {
   const AddCustomerPage({super.key});
@@ -11,10 +12,12 @@ class AddCustomerPage extends StatefulWidget {
 }
 
 class _AddCustomerPageState extends State<AddCustomerPage> {
+  final _firebaseService = FirebaseService();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _locationController = TextEditingController();
   final _holdingController = TextEditingController();
+  bool _isLoading = false;
 
   static const int _availableVolume = 96;
 
@@ -22,6 +25,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
   String? _phoneError;
   String? _locationError;
   String? _holdingError;
+  bool _isValidatingPhone = false;
 
   void _validateField(
     String value,
@@ -35,13 +39,39 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
     }
   }
 
-  void _validatePhone(String value) {
+  void _validatePhone(String value) async {
     if (value.isEmpty) {
       setState(() => _phoneError = 'Phone number is required');
-    } else if (value.length != 10) {
+      return;
+    }
+
+    if (value.length != 10) {
       setState(() => _phoneError = 'Phone number must be 10 digits');
-    } else {
-      setState(() => _phoneError = null);
+      return;
+    }
+
+    setState(() {
+      _isValidatingPhone = true;
+      _phoneError = null;
+    });
+
+    try {
+      final exists = await _firebaseService.isPhoneNumberExists(value);
+      if (mounted) {
+        setState(() {
+          _isValidatingPhone = false;
+          if (exists) {
+            _phoneError = 'A customer with this phone number already exists';
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isValidatingPhone = false;
+          _phoneError = 'Failed to validate phone number';
+        });
+      }
     }
   }
 
@@ -83,15 +113,33 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
         _holdingError == null;
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     if (_isFormValid()) {
-      final formData = {
-        'name': _nameController.text,
-        'phone': _phoneController.text,
-        'location': _locationController.text,
-        'holding': _holdingController.text,
-      };
-      print('Form Data: $formData');
+      setState(() => _isLoading = true);
+      try {
+        await _firebaseService.addCustomer(
+          name: _nameController.text,
+          phone: _phoneController.text,
+          location: _locationController.text,
+          holding: int.parse(_holdingController.text),
+        );
+        if (mounted) {
+          context.pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Customer added successfully')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to add customer: $e')));
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
@@ -116,6 +164,31 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
                 IconButton(
                   onPressed: () => context.pop(),
                   icon: const Icon(Icons.arrow_back),
+                ),
+                const Spacer(),
+                StreamBuilder<bool>(
+                  stream: _firebaseService.onlineStatus,
+                  builder: (context, snapshot) {
+                    final isOnline = snapshot.data ?? false;
+                    return Row(
+                      children: [
+                        Icon(
+                          Icons.circle,
+                          size: 12,
+                          color: isOnline ? Colors.green : Colors.grey,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isOnline ? 'Online' : 'Offline',
+                          style: TextStyle(
+                            color: isOnline ? Colors.green : Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),
@@ -154,6 +227,14 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
                     isRequired: true,
                     errorText: _phoneError,
                     onChanged: _validatePhone,
+                    suffix:
+                        _isValidatingPhone
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : null,
                   ),
                   InputField(
                     label: 'Location',
@@ -183,7 +264,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: _handleSubmit,
+                      onPressed: _isLoading ? null : _handleSubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
@@ -191,10 +272,22 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        'Add User',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      child:
+                          _isLoading
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                              : const Text(
+                                'Add User',
+                                style: TextStyle(fontSize: 16),
+                              ),
                     ),
                   ),
                 ],
