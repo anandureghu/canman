@@ -55,6 +55,7 @@ class CustomersPage extends StatelessWidget {
                       id: customer['id'],
                       title: customer['name'],
                       subtitle: customer['phone'],
+                      count: customer['holding'] as int,
                     ),
                   );
                 },

@@ -7,6 +7,9 @@ import 'package:canman/pages/customers_page.dart';
 import 'package:canman/pages/supply_page.dart';
 import 'package:canman/pages/distribute_page.dart';
 import 'package:canman/pages/customer_add_page.dart';
+import 'package:canman/pages/supplier_add_page.dart';
+import 'package:canman/pages/supplier_detail_page.dart';
+import 'package:canman/pages/supplier_edit_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -60,6 +63,21 @@ final router = GoRouter(
     GoRoute(
       path: Routes.addCustomerPage,
       builder: (context, state) => const AddCustomerPage(),
+    ),
+    GoRoute(
+      path: Routes.addSupplierPage,
+      builder: (context, state) => const AddSupplierPage(),
+    ),
+    GoRoute(
+      path: Routes.supplierDetailPage,
+      builder:
+          (context, state) =>
+              SupplierDetailPage(id: state.pathParameters['id']!),
+    ),
+    GoRoute(
+      path: Routes.supplierEditPage,
+      builder:
+          (context, state) => SupplierEditPage(id: state.pathParameters['id']!),
     ),
   ],
 );
