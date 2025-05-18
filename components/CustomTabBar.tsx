@@ -1,3 +1,4 @@
+import { colors } from "@/constants/colors";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Text } from "@react-navigation/elements";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
@@ -34,12 +35,17 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             onPress={onPress}
             style={[
               styles.tabItem,
-              { backgroundColor: isFocused ? "#00f" : "#fff" },
+              {
+                backgroundColor: isFocused
+                  ? colors.primary
+                  : colors.neutral[50],
+              },
             ]}
           >
             <Text
               style={{
-                color: isFocused ? "white" : "black",
+                color: isFocused ? colors.neutral[100] : colors.neutral[900],
+                fontWeight: isFocused ? "bold" : "normal",
               }}
             >
               {label as string}
