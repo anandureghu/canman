@@ -1,23 +1,48 @@
-import { IClientService } from "../interfaces/client.services";
+import { ClientTypes, IClientService } from "../interfaces/client.services";
 
 export class ClientService implements IClientService {
   constructor(private supabase: any) {}
 
-  async getClients() {
-    const { data, error } = await this.supabase
+  async getClients(type: ClientTypes = "client") {
+    const { data: clients, error } = await this.supabase
       .from("clients")
-      .select("*, delivery(*)")
+      .select("*")
+      .eq("type", type)
       .eq("active", true)
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data;
+
+    // For each client, fetch the latest delivery
+    const clientsWithLastQuantity = await Promise.all(
+      clients.map(async (client: any) => {
+        const { data: lastDelivery, error: deliveryError } = await this.supabase
+          .from("delivery")
+          .select("quantity")
+          .eq("userId", client.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (deliveryError && deliveryError.code !== "PGRST116") {
+          // Skip missing deliveries (no delivery found), else throw
+          throw deliveryError;
+        }
+
+        return {
+          ...client,
+          quantity: lastDelivery?.quantity || 0,
+        };
+      })
+    );
+
+    return clientsWithLastQuantity;
   }
 
   async getClientById(id: string) {
     const { data, error } = await this.supabase
       .from("clients")
-      .select("*, delivery(*)")
+      .select("*")
       .eq("id", id)
       .single();
 

@@ -1,12 +1,12 @@
 export interface IClientService {
-  getClients: () => Promise<any>;
+  getClients: (type?: ClientTypes) => Promise<any>;
   getClientById: (id: string) => Promise<any>;
   createClient: (client: any) => Promise<any>;
   updateClient: (id: string, client: any) => Promise<any>;
   deleteClient: (id: string) => Promise<any>;
   getClientByPhone: (phone: string) => Promise<any>;
 }
-
+export type ClientTypes = "client" | "supplier" | "distributor";
 export interface IClient {
   id: string;
   name: string;
@@ -14,4 +14,5 @@ export interface IClient {
   address: string;
   created_at: string;
   updated_at: string;
+  type: ClientTypes;
 }

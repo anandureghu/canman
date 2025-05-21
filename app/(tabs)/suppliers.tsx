@@ -1,12 +1,11 @@
+import ClientListing from "@/components/clientlisting";
 import React from "react";
-import { SafeAreaView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native";
 
 const suppliers = () => {
   return (
-    <SafeAreaView className=" flex-1 px-10">
-      <View className="flex justify-center items-center flex-1 flex-col gap-5">
-        <Text className="text-gray-500 text-base">Suppliers</Text>
-      </View>
+    <SafeAreaView className="p-[20px]">
+      <ClientListing type="supplier" />
     </SafeAreaView>
   );
 };
