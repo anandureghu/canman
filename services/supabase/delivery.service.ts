@@ -65,4 +65,88 @@ export class DeliveryService implements IDeliveryService {
     if (error) throw error;
     return data;
   }
+
+  async getMonthlyAnalytics(year: number, month: number) {
+    const startDate = new Date(year, month - 1, 1).toISOString();
+    const endDate = new Date(year, month, 1).toISOString();
+
+    const { data, error } = await this.supabase
+      .from("delivery")
+      .select(
+        `
+        quantity,
+        created_at,
+        clients (
+          type
+        )
+      `
+      )
+      .gte("created_at", startDate)
+      .lt("created_at", endDate);
+
+    if (error) throw error;
+
+    const summary = {
+      delivered: 0, // type = client
+      supplied: 0, // type = supplier
+      distributed: 0, // type = distributor
+    };
+
+    data.forEach((record: any) => {
+      const clientType = record.clients?.type;
+      if (!clientType) return;
+
+      if (clientType === "client") {
+        summary.delivered += record.quantity;
+      } else if (clientType === "supplier") {
+        summary.supplied += record.quantity;
+      } else if (clientType === "distributor") {
+        summary.distributed += record.quantity;
+      }
+    });
+
+    return summary;
+  }
+
+  async getYearlyAnalytics(year: number) {
+    const startDate = new Date(year, 0, 1).toISOString();
+    const endDate = new Date(year + 1, 0, 1).toISOString();
+
+    const { data, error } = await this.supabase
+      .from("delivery")
+      .select(
+        `
+        quantity,
+        created_at,
+        clients (
+          type
+        )
+      `
+      )
+      .gte("created_at", startDate)
+      .lt("created_at", endDate);
+
+    if (error) throw error;
+
+    const summary = {
+      delivered: 0,
+      supplied: 0,
+      distributed: 0,
+    };
+
+    data.forEach((record: any) => {
+      const clientType = record.clients?.type;
+      if (!clientType) return;
+
+      if (clientType === "client") {
+        summary.delivered += record.quantity;
+      } else if (clientType === "supplier") {
+        summary.supplied += record.quantity;
+      } else if (clientType === "distributor") {
+        summary.distributed += record.quantity;
+      }
+    });
+
+    return summary;
+  }
 }

@@ -1,3 +1,5 @@
+import { AnalyticsResponse } from "@/types/analytics.type";
+
 export interface IDelivery {
   id: string;
   userId: string;
@@ -17,4 +19,11 @@ export interface IDeliveryService {
     delivery: Partial<IDelivery>
   ) => Promise<IDelivery>;
   deleteDelivery: (id: string) => Promise<IDelivery>;
+
+  getMonthlyAnalytics: (
+    year: number,
+    month: number
+  ) => Promise<AnalyticsResponse>;
+
+  getYearlyAnalytics: (year: number) => Promise<AnalyticsResponse>;
 }

@@ -3,9 +3,9 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 interface Props {
   title: string;
-  description: string;
+  description?: string;
   info?: string;
-  onPress: () => void;
+  onPress?: () => void;
   icon?: React.ReactNode;
 }
 
@@ -25,11 +25,13 @@ const InfoCard = ({ title, description, info, onPress, icon }: Props) => {
           </View>
           <View>
             <Text className="text-xl font-semibold">{title}</Text>
-            <Text className="text-sm text-gray-400">{description}</Text>
+            {description && (
+              <Text className="text-sm text-gray-400">{description}</Text>
+            )}
           </View>
         </View>
         {info && (
-          <View className="bg-blue-500 w-[40px] h-[40px] p-3 rounded-lg items-center justify-center">
+          <View className="bg-blue-500 min-w-[40px] h-[40px] p-3 rounded-lg items-center justify-center">
             <Text className="text-neutral-50 font-bold">{info || "0"}</Text>
           </View>
         )}
