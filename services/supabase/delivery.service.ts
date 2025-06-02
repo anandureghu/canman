@@ -1,7 +1,12 @@
+import { supabase } from "@/db/supabase";
 import { IDelivery, IDeliveryService } from "../interfaces/delivery.services";
 
 export class DeliveryService implements IDeliveryService {
-  constructor(private supabase: any) {}
+  private supabase;
+
+  constructor() {
+    this.supabase = supabase;
+  }
 
   async getDeliveries() {
     const { data, error } = await this.supabase

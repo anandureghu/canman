@@ -1,6 +1,4 @@
 import FormInput from "@/components/forminput";
-import InfoCard from "@/components/infocard";
-import { supabase } from "@/db/supabase";
 import {
   ClientTypes,
   IClientService,
@@ -15,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import InfoCard from "./infocard";
 
 interface Props {
   type: ClientTypes;
@@ -22,29 +21,47 @@ interface Props {
 
 export default function ClientListing({ type }: Props) {
   const router = useRouter();
-  const clientService: IClientService = useMemo(
-    () => new ClientService(supabase),
-    []
-  );
+  const clientService: IClientService = useMemo(() => new ClientService(), []);
 
   const [clients, setClients] = useState([]);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    const fetchClients = async () => {
+    const searchClients = async () => {
       try {
-        const clients = await clientService.getClients(type);
+        const clients = await clientService.searchClients(search, type);
 
         setClients(clients);
       } catch (error) {
         console.error(`Error fetching ${type}s: `, error);
       }
     };
+    setTimeout(() => {
+      searchClients();
+    }, 500); // Debounce search input
+  }, [search]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const clients = await clientService.getClients(type);
+        if (search) {
+          const filteredClients = clients.filter((client: any) =>
+            client.name.toLowerCase().includes(search.toLowerCase())
+          );
+          setClients(filteredClients);
+        } else {
+          setClients(clients);
+        }
+      } catch (error) {
+        console.error(`Error fetching ${type}s: `, error);
+      }
+    };
     fetchClients();
-  }, []);
+  }, [search]);
 
   return (
-    <SafeAreaView className="p-[20px]">
+    <SafeAreaView className="p-[20px] max-h-full h-full">
       {/* Search Bar */}
 
       <View className="flex-row gap-3 px-[20px] items-center">
@@ -79,29 +96,31 @@ export default function ClientListing({ type }: Props) {
       </View>
 
       {/* Listing */}
-      <View>
-        <FlatList
-          data={clients}
-          keyExtractor={(item: any) => item.id.toString()}
-          renderItem={({ item }: any) => (
-            <InfoCard
-              title={item.name}
-              description={item.phone}
-              info={item?.quantity || "0"}
-              onPress={() => {
-                router.push(`/client/${item.id}?type=${type}`);
-              }}
-            />
-          )}
-          className="w-full p-[20px]"
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          ListEmptyComponent={
-            <Text className="text-center text-gray-500">No {type}s found.</Text>
-          }
-        />
-      </View>
+      {/* <View className=""> */}
+      <FlatList
+        data={clients}
+        overScrollMode="auto"
+        scrollToOverflowEnabled
+        keyExtractor={(item: any) => item.id.toString()}
+        renderItem={({ item }: any) => (
+          <InfoCard
+            title={item.name}
+            description={item.phone}
+            info={item?.quantity || "0"}
+            onPress={() => {
+              router.push(`/client/${item.id}?type=${type}`);
+            }}
+          />
+        )}
+        className="w-full p-[20px] mb-10"
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        ListEmptyComponent={
+          <Text className="text-center text-gray-500">No {type}s found.</Text>
+        }
+      />
+      {/* </View> */}
     </SafeAreaView>
   );
 }

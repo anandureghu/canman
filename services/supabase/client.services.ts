@@ -1,7 +1,12 @@
+import { supabase } from "@/db/supabase";
 import { ClientTypes, IClientService } from "../interfaces/client.services";
 
 export class ClientService implements IClientService {
-  constructor(private supabase: any) {}
+  private supabase;
+
+  constructor() {
+    this.supabase = supabase;
+  }
 
   async getClients(type: ClientTypes = "client") {
     const { data: clients, error } = await this.supabase
@@ -94,5 +99,40 @@ export class ClientService implements IClientService {
 
     if (error) throw error;
     return data;
+  }
+
+  async searchClients(search: string, type: ClientTypes = "client") {
+    const { data: clients, error } = await this.supabase
+      .from("clients")
+      .select("*")
+      .ilike("name", `%${search}%`)
+      .eq("type", type)
+      .eq("active", true)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const clientsWithLastQuantity = await Promise.all(
+      clients.map(async (client: any) => {
+        const { data: lastDelivery, error: deliveryError } = await this.supabase
+          .from("delivery")
+          .select("quantity")
+          .eq("userId", client.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (deliveryError && deliveryError.code !== "PGRST116") {
+          throw deliveryError;
+        }
+
+        return {
+          ...client,
+          quantity: lastDelivery?.quantity || 0,
+        };
+      })
+    );
+
+    return clientsWithLastQuantity;
   }
 }

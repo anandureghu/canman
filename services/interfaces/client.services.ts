@@ -5,6 +5,7 @@ export interface IClientService {
   updateClient: (id: string, client: any) => Promise<any>;
   deleteClient: (id: string) => Promise<any>;
   getClientByPhone: (phone: string) => Promise<any>;
+  searchClients: (search: string, type: ClientTypes) => Promise<any>;
 }
 export type ClientTypes = "client" | "supplier" | "distributor";
 export interface IClient {

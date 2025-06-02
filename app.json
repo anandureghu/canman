@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/logo-filled.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.picominds.kalayillatextandtraders"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +38,15 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "dda56345-acd4-430e-a6d7-b198ad0b7270"
+      }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
     }
   }
 }

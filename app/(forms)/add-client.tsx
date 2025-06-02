@@ -1,5 +1,4 @@
 import FormInput from "@/components/forminput";
-import { supabase } from "@/db/supabase";
 import {
   ClientTypes,
   IClientService,
@@ -16,10 +15,7 @@ const AddClient = () => {
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
 
-  const clientService: IClientService = useMemo(
-    () => new ClientService(supabase),
-    []
-  );
+  const clientService: IClientService = useMemo(() => new ClientService(), []);
 
   const router = useRouter();
   const { type }: { type: ClientTypes } = useLocalSearchParams();

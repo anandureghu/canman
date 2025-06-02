@@ -1,5 +1,4 @@
 import { colors } from "@/constants/colors";
-import { supabase } from "@/db/supabase";
 import {
   ClientTypes,
   IClientService,
@@ -15,12 +14,9 @@ import FormInput from "./forminput";
 import InfoCard from "./infocard";
 
 const ClientDetail = () => {
-  const clientService: IClientService = useMemo(
-    () => new ClientService(supabase),
-    []
-  );
+  const clientService: IClientService = useMemo(() => new ClientService(), []);
   const deliveryService: IDeliveryService = useMemo(
-    () => new DeliveryService(supabase),
+    () => new DeliveryService(),
     []
   );
 
@@ -75,7 +71,7 @@ const ClientDetail = () => {
 
   return (
     <>
-      <View className="p-[20px]">
+      <View className="p-[20px] h-full max-h-full">
         {/* Header */}
         <View className="">
           <Link
@@ -139,31 +135,25 @@ const ClientDetail = () => {
             </Text>
           </TouchableOpacity>
         </View>
-        <View className="">
-          <FlatList
-            data={deliveries}
-            horizontal={false}
-            showsVerticalScrollIndicator={true}
-            keyExtractor={(item: any) => item.id.toString()}
-            renderItem={({ item }: any) => (
-              <InfoCard
-                icon={
-                  <Icon
-                    name="checkcircle"
-                    size={50}
-                    color={colors.green[500]}
-                  />
-                }
-                title={"Delivered"}
-                description={new Date(item?.created_at).toLocaleDateString()}
-                info={item?.quantity}
-                onPress={() => {}}
-              />
-            )}
-            className="w-full"
-            showsHorizontalScrollIndicator={false}
-          />
-        </View>
+        <FlatList
+          data={deliveries}
+          horizontal={false}
+          showsVerticalScrollIndicator={true}
+          keyExtractor={(item: any) => item.id.toString()}
+          renderItem={({ item }: any) => (
+            <InfoCard
+              icon={
+                <Icon name="checkcircle" size={50} color={colors.green[500]} />
+              }
+              title={"Delivered"}
+              description={new Date(item?.created_at).toLocaleDateString()}
+              info={item?.quantity}
+              onPress={() => {}}
+            />
+          )}
+          className="w-full h-full"
+          showsHorizontalScrollIndicator={false}
+        />
       </View>
 
       <Modal
