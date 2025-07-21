@@ -1,5 +1,5 @@
 import { supabase } from "@/db/supabase";
-import { ClientTypes, IClientService } from "../interfaces/client.services";
+import { IClientService, TClientTypes } from "../interfaces/client.services";
 
 export class ClientService implements IClientService {
   private supabase;
@@ -8,7 +8,7 @@ export class ClientService implements IClientService {
     this.supabase = supabase;
   }
 
-  async getClients(type: ClientTypes = "client") {
+  async getClients(type: TClientTypes = "client") {
     const { data: clients, error } = await this.supabase
       .from("clients")
       .select("*")
@@ -18,30 +18,43 @@ export class ClientService implements IClientService {
 
     if (error) throw error;
 
-    // For each client, fetch the latest delivery
-    const clientsWithLastQuantity = await Promise.all(
+    const clientsWithQuantities = await Promise.all(
       clients.map(async (client: any) => {
-        const { data: lastDelivery, error: deliveryError } = await this.supabase
+        // Fetch latest 'supply' delivery
+        const { data: supplyDelivery, error: supplyError } = await this.supabase
           .from("delivery")
           .select("quantity")
           .eq("userId", client.id)
+          .eq("type", "supply")
           .order("created_at", { ascending: false })
           .limit(1)
           .single();
 
-        if (deliveryError && deliveryError.code !== "PGRST116") {
-          // Skip missing deliveries (no delivery found), else throw
-          throw deliveryError;
-        }
+        // Fetch latest 'collect' delivery
+        const { data: collectDelivery, error: collectError } =
+          await this.supabase
+            .from("delivery")
+            .select("quantity")
+            .eq("userId", client.id)
+            .eq("type", "collect")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+        // Skip errors if no result; throw other types
+        if (supplyError && supplyError.code !== "PGRST116") throw supplyError;
+        if (collectError && collectError.code !== "PGRST116")
+          throw collectError;
 
         return {
           ...client,
-          quantity: lastDelivery?.quantity || 0,
+          supplyQuantity: supplyDelivery?.quantity || 0,
+          collectQuantity: collectDelivery?.quantity || 0,
         };
       })
     );
 
-    return clientsWithLastQuantity;
+    return clientsWithQuantities;
   }
 
   async getClientById(id: string) {
@@ -101,7 +114,7 @@ export class ClientService implements IClientService {
     return data;
   }
 
-  async searchClients(search: string, type: ClientTypes = "client") {
+  async searchClients(search: string, type: TClientTypes = "client") {
     const { data: clients, error } = await this.supabase
       .from("clients")
       .select("*")

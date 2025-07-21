@@ -1,11 +1,12 @@
 import FormInput from "@/components/forminput";
 import {
-  ClientTypes,
   IClientService,
+  TClientTypes,
 } from "@/services/interfaces/client.services";
 import { ClientService } from "@/services/supabase/client.services";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -16,7 +17,7 @@ import {
 import InfoCard from "./infocard";
 
 interface Props {
-  type: ClientTypes;
+  type: TClientTypes;
 }
 
 export default function ClientListing({ type }: Props) {
@@ -41,24 +42,21 @@ export default function ClientListing({ type }: Props) {
     }, 500); // Debounce search input
   }, [search]);
 
-  useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const clients = await clientService.getClients(type);
-        if (search) {
-          const filteredClients = clients.filter((client: any) =>
-            client.name.toLowerCase().includes(search.toLowerCase())
-          );
-          setClients(filteredClients);
-        } else {
+  useFocusEffect(
+    useCallback(() => {
+      const fetchClients = async () => {
+        try {
+          const clients = await clientService.getClients(type);
           setClients(clients);
+        } catch (error) {
+          console.error(`Error fetching ${type}s: `, error);
         }
-      } catch (error) {
-        console.error(`Error fetching ${type}s: `, error);
-      }
-    };
-    fetchClients();
-  }, [search]);
+      };
+      fetchClients();
+
+      return () => {}; // Optional cleanup
+    }, [])
+  );
 
   return (
     <SafeAreaView className="p-[20px] max-h-full h-full">
@@ -102,16 +100,27 @@ export default function ClientListing({ type }: Props) {
         overScrollMode="auto"
         scrollToOverflowEnabled
         keyExtractor={(item: any) => item.id.toString()}
-        renderItem={({ item }: any) => (
-          <InfoCard
-            title={item.name}
-            description={item.phone}
-            info={item?.quantity || "0"}
-            onPress={() => {
-              router.push(`/client/${item.id}?type=${type}`);
-            }}
-          />
-        )}
+        renderItem={({ item }: any) => {
+          return (
+            <InfoCard
+              title={item.name}
+              description={item.phone}
+              info={item?.supplyQuantity || "0"}
+              onPress={() => {
+                router.push(`/client/${item.id}?type=${type}`);
+              }}
+              {...(type === "client"
+                ? {
+                    infoStyle: "bg-red-50 border border-red-200",
+                    infoTextStyle: "text-red-500",
+                    subinfoStyle: "bg-green-50 border border-green-600",
+                    subinfoTextStyle: "text-green-700",
+                    subinfo: item.collectQuantity || "0",
+                  }
+                : {})}
+            />
+          );
+        }}
         className="w-full p-[20px] mb-10"
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}

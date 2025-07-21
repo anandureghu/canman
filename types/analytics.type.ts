@@ -1,5 +1,6 @@
 export interface AnalyticsResponse {
-  delivered: number;
+  collected: number;
   supplied: number;
   distributed: number;
+  stock: number;
 }

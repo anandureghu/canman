@@ -12,13 +12,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="suppliers"
-        options={{
-          title: "Suppliers",
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
         name="distributors"
         options={{
           title: "Distributors",

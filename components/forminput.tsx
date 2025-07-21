@@ -23,6 +23,7 @@ const FormInput: React.FC<Props> = ({
       <TextInput
         placeholder={placeholder ? placeholder : label}
         onChangeText={onChangeText}
+        defaultValue={value}
         value={value}
         className="border border-gray-200 rounded-md p-3 mt-2"
         {...rest}

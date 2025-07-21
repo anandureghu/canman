@@ -65,7 +65,7 @@ const MonthlyAnalytics = () => {
       <View>
         <InfoCard
           title="Delivered"
-          info={data?.delivered.toString() || "0"}
+          info={data?.collected.toString() || "0"}
           description="" // Replace with actual delivered value
         />
         <InfoCard
