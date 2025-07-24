@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Kalayil Latext & Traders",
+    "slug": "kalayil-latext-and-traders",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/logo-filled.png",
+    "scheme": "kalayil-latext-and-traders",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo-filled.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.picominds.kalayillatextandtraders"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/logo-filled.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/logo-filled.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "dda56345-acd4-430e-a6d7-b198ad0b7270"
+      }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    }
+  }
+}
