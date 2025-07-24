@@ -1,50 +1,95 @@
-# Welcome to your Expo app 👋
+# Delivery & Inventory Manager – Kalayil Latex and Traders
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple React Native + Supabase-powered delivery management and inventory tracking app built for Kalayil Latex and Traders.
 
-## Get started
+This system supports basic operations like recording deliveries and updating centralized inventory counts, with clear logic based on delivery type and client type.
 
-1. Install dependencies
+## 🌟 Overview
 
-   ```bash
-   npm install
-   ```
+This system helps you manage inventory by logging deliveries and automatically adjusting stock levels based on business rules. It runs entirely on Supabase with a dedicated Android app built using Expo.
 
-2. Start the app
+## 🚀 Features
 
-   ```bash
-   npx expo start
-   ```
+- 📱 Android build using React Native + Expo
+- 🧠 Smart inventory logic powered by Supabase functions and triggers
+- ✅ No authentication, login-free experience
+- 📦 Auto-updating inventory when delivery entries are added, updated, or removed
 
-In the output, you'll find options to open the app in a
+## 🧠 Business Rules
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+| `clients.type` | `delivery.type` | Inventory Effect  |
+| -------------- | --------------- | ----------------- |
+| `client`       | `collect`       | ➕ Increase stock |
+| `distributor`  | `supply`        | ➖ Decrease stock |
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## ⚙️ Logic Summary
 
-## Get a fresh project
+The inventory value is updated automatically through a Postgres trigger function:
 
-When you're ready, run:
+If client.type = 'client' and delivery.type = 'collect' → Increase inventory
+
+If client.type = 'distributor' and delivery.type = 'supply' → Decrease inventory
+
+## 🛠 Built With
+
+- [React Native (Expo)](https://expo.dev/) — for building the Android mobile app
+- [Supabase](https://supabase.com/) — as the backend-as-a-service (database + triggers + realtime)
+- PostgreSQL triggers for smart logic execution
+
+## 📱 Start the Expo Project
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🤖 Build for Android
 
-## Learn more
+```bash
+npx expo run
 
-To learn more about developing your project with Expo, look at the following resources:
+# Or use EAS build for production-ready APK
+eas build --platform android --profile preview --local
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 🗃️ Table Structure
 
-## Join the community
+### `clients`
 
-Join our community of developers creating universal apps.
+| Column       | Type      | Description                      |
+| ------------ | --------- | -------------------------------- |
+| `id`         | UUID      | Primary key                      |
+| `name`       | Text      | Name of the client               |
+| `type`       | Text      | Either `client` or `distributor` |
+| `created_at` | Timestamp | Auto-generated                   |
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### `deliveries`
+
+| Column       | Type      | Description                  |
+| ------------ | --------- | ---------------------------- |
+| `id`         | UUID      | Primary key                  |
+| `userId`     | UUID      | Foreign key to `clients.id`  |
+| `quantity`   | Integer   | Quantity of delivery         |
+| `type`       | Text      | Either `collect` or `supply` |
+| `created_at` | Timestamp | Auto-generated               |
+
+### `inventory`
+
+| Column       | Type      | Description            |
+| ------------ | --------- | ---------------------- |
+| `id`         | Integer   | Primary key            |
+| `quantity`   | Integer   | Current stock quantity |
+| `updated_at` | Timestamp | Last updated time      |
+
+## 🔮 Future Plans
+
+- Low-stock notifications
+- Offline sync support
+- Role-based dashboard views
+- Export delivery reports
+- Backup & Restore Data
+- Year and month wise reports and filtering
+
+## 👨‍💻 Maintained by
+
+[Anandu Reghu](https://github.com/anandureghu)
