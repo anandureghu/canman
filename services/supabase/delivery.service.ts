@@ -115,6 +115,7 @@ export class DeliveryService implements IDeliveryService {
       collected: 0,
       supplied: 0,
       distributed: 0,
+      distributionCollected: 0,
       stock: 0,
     };
 
@@ -129,7 +130,11 @@ export class DeliveryService implements IDeliveryService {
           summary.supplied += record.quantity;
         }
       } else if (clientType === "distributor") {
-        summary.distributed += record.quantity;
+        if (deliveryType === "collect") {
+          summary.distributionCollected += record.quantity;
+        } else if (deliveryType === "supply") {
+          summary.distributed += record.quantity;
+        }
       }
     });
 
@@ -161,6 +166,7 @@ export class DeliveryService implements IDeliveryService {
       collected: 0,
       supplied: 0,
       distributed: 0,
+      distributionCollected: 0,
       stock: 0,
     };
 
@@ -175,7 +181,11 @@ export class DeliveryService implements IDeliveryService {
           summary.supplied += record.quantity;
         }
       } else if (clientType === "distributor") {
-        summary.distributed += record.quantity;
+        if (deliveryType === "collect") {
+          summary.distributionCollected += record.quantity;
+        } else if (deliveryType === "supply") {
+          summary.distributed += record.quantity;
+        }
       }
     });
 

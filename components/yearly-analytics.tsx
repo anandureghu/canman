@@ -93,7 +93,8 @@ const YearlyAnalytics = () => {
           title="Distributed"
           info={data?.distributed.toString() || "0"}
           description="" // Replace with actual delivered value
-          infoStyle="border-blue-500"
+          infoStyle="bg-red-50 border border-red-200"
+          infoTextStyle="text-red-500"
           onPress={() => {
             router.push({
               pathname: "/analytics_detail",
@@ -107,8 +108,37 @@ const YearlyAnalytics = () => {
         />
 
         <InfoCard
+          title="Distributed Returns"
+          info={data?.distributionCollected.toString() || "0"}
+          description="" // Replace with actual delivered value
+          infoStyle="bg-green-50 border border-green-200"
+          infoTextStyle="text-green-500"
+          onPress={() => {
+            router.push({
+              pathname: "/analytics_detail",
+              params: {
+                clientType: ClientTypes.DISTRIBUTOR,
+                deliveryType: DeliveryTypes.COLLECT,
+                page: "Distributed",
+              },
+            });
+          }}
+        />
+
+        <InfoCard
           title="Pending Stock"
           info={(data?.supplied! - data?.collected!).toString() || "0"}
+          description="" // Replace with actual delivered value
+          infoStyle="bg-yellow-50 border border-yellow-500"
+          infoTextStyle="text-orange-700"
+        />
+
+        <InfoCard
+          title="Pending Distributed"
+          info={
+            (data?.distributed! - data?.distributionCollected!).toString() ||
+            "0"
+          }
           description="" // Replace with actual delivered value
           infoStyle="bg-yellow-50 border border-yellow-500"
           infoTextStyle="text-orange-700"

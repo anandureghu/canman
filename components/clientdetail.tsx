@@ -237,29 +237,25 @@ const ClientDetail = () => {
               {client?.address}
             </Text>
           </View>
-          {type === "client" && (
-            <>
-              <View className="flex-row items-center gap-5 mt-1">
-                <Text className="text-sm text-gray-400 flex-[0.5]">
-                  Remaining
-                </Text>
-                <View className="flex-[1]">
-                  <Text className="text-lg font-semibold bg-yellow-200 w-[70px] px-3 text-center rounded-full text-yellow-800 border border-yellow-500">
-                    {(deliveries?.totalSupply || 0) -
-                      (deliveries?.totalCollect || 0)}
-                  </Text>
-                </View>
-              </View>
-              <View className="flex-row items-center gap-5 mt-1">
-                <Text className="text-sm text-gray-400 flex-[0.5]">
-                  Total Collected
-                </Text>
-                <Text className="text-lg font-semibold flex-[1]">
-                  {deliveries?.totalCollect || 0}
-                </Text>
-              </View>
-            </>
-          )}
+
+          <View className="flex-row items-center gap-5 mt-1">
+            <Text className="text-sm text-gray-400 flex-[0.5]">Remaining</Text>
+            <View className="flex-[1]">
+              <Text className="text-lg font-semibold bg-yellow-200 w-[70px] px-3 text-center rounded-full text-yellow-800 border border-yellow-500">
+                {(deliveries?.totalSupply || 0) -
+                  (deliveries?.totalCollect || 0)}
+              </Text>
+            </View>
+          </View>
+          <View className="flex-row items-center gap-5 mt-1">
+            <Text className="text-sm text-gray-400 flex-[0.5]">
+              Total Collected
+            </Text>
+            <Text className="text-lg font-semibold flex-[1]">
+              {deliveries?.totalCollect || 0}
+            </Text>
+          </View>
+
           <View className="flex-row items-center gap-5 mt-1">
             <Text className="text-sm text-gray-400 flex-[0.5]">
               {type === "client" ? "Total Supplied" : "Distributed"}
@@ -282,21 +278,20 @@ const ClientDetail = () => {
               }}
             >
               <Text className="text-blue-500 text-lg font-medium text-center">
-                {type === "client" ? "Supply" : "New Distribute"}
+                {type === "client" ? "Supply" : "Distribute"}
               </Text>
             </TouchableOpacity>
-            {type === "client" && (
-              <TouchableOpacity
-                className="rounded-lg"
-                onPress={() => {
-                  setOpenCollectModal(true);
-                }}
-              >
-                <Text className="text-blue-500 text-lg font-medium text-center">
-                  Collect
-                </Text>
-              </TouchableOpacity>
-            )}
+
+            <TouchableOpacity
+              className="rounded-lg"
+              onPress={() => {
+                setOpenCollectModal(true);
+              }}
+            >
+              <Text className="text-blue-500 text-lg font-medium text-center">
+                Collect
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
         <FlatList
