@@ -107,6 +107,14 @@ const YearlyAnalytics = () => {
         />
 
         <InfoCard
+          title="Pending Stock"
+          info={(data?.supplied! - data?.collected!).toString() || "0"}
+          description="" // Replace with actual delivered value
+          infoStyle="bg-yellow-50 border border-yellow-500"
+          infoTextStyle="text-orange-700"
+        />
+
+        <InfoCard
           title="Stock In-Hand"
           info={data?.stock.toString() || "0"}
           description="" // Replace with actual delivered value
