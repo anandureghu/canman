@@ -109,7 +109,7 @@ const YearlyAnalytics = () => {
 
         <InfoCard
           title="Distributed Returns"
-          info={data?.distributionCollected.toString() || "0"}
+          info={data?.distributionCollected?.toString() || "0"}
           description="" // Replace with actual delivered value
           infoStyle="bg-green-50 border border-green-200"
           infoTextStyle="text-green-500"
