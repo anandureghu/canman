@@ -12,6 +12,7 @@ import {
 import { ClientService } from "@/services/supabase/client.services";
 import { DeliveryService } from "@/services/supabase/delivery.service";
 import { TDeliveryResponse } from "@/types/delivery.types";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -27,6 +28,8 @@ import Icon from "react-native-vector-icons/AntDesign";
 import FAIcon from "react-native-vector-icons/FontAwesome";
 import FormInput from "./forminput";
 import InfoCard from "./infocard";
+
+const deleteDelivery = process.env.EXPO_PUBLIC_DELETE_DELIVERY === "true";
 
 const ClientDetail = () => {
   const clientService: IClientService = useMemo(() => new ClientService(), []);
@@ -50,8 +53,12 @@ const ClientDetail = () => {
   const [openSupplyModal, setOpenSupplyModal] = useState(false);
   const [openCollectModal, setOpenCollectModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openDeliveryDeleteModal, setOpenDeliveryDeleteModal] = useState<
+    null | string
+  >(null);
 
   const [quantity, setQuantity] = useState<any>(null);
+  const [date, setDate] = useState<any>(null);
 
   const handleAddDelivery = async (quantity: string, type: TDeliveryTypes) => {
     const deliveryData = {
@@ -90,7 +97,7 @@ const ClientDetail = () => {
   };
 
   const handleUpdateDelivery = async () => {
-    const delivery = { ...selectedDelivery, quantity };
+    const delivery = { ...selectedDelivery, quantity, updatedAt: date };
 
     try {
       await deliveryService.updateDelivery(selectedDelivery?.id!, delivery);
@@ -104,6 +111,18 @@ const ClientDetail = () => {
       // toast.error("Error updating delivery", {
       //   description: error instanceof Error ? error.message : "Unknown error",
       // });
+    }
+  };
+
+  const handleDeleteDelivery = async () => {
+    try {
+      await deliveryService.deleteDelivery(openDeliveryDeleteModal!);
+      const deliveries = await deliveryService.getDeliveriesByUserId(
+        id as string
+      );
+      setDeliveries(deliveries);
+    } catch (error) {
+      console.error("Error deleting delivery: ", error);
     }
   };
 
@@ -299,38 +318,45 @@ const ClientDetail = () => {
           horizontal={false}
           showsVerticalScrollIndicator={true}
           keyExtractor={(item: any) => item.id.toString()}
-          renderItem={({ item }: any) => (
-            <InfoCard
-              icon={
-                <View
-                  className={`${
-                    item.type === DeliveryTypes.SUPPLY
-                      ? "bg-red-50 border border-red-200"
-                      : "bg-green-50 border border-green-200"
-                  } w-full h-full rounded-full flex items-center justify-center`}
-                >
-                  <Icon
-                    name="checkcircle"
-                    size={20}
-                    color={
+          renderItem={({ item }: any) => {
+            return (
+              <InfoCard
+                icon={
+                  <View
+                    className={`${
                       item.type === DeliveryTypes.SUPPLY
-                        ? colors.red[500]
-                        : colors.green[500]
-                    }
-                  />
-                </View>
-              }
-              title={
-                item.type === DeliveryTypes.SUPPLY ? "Delivered" : "Collected"
-              }
-              description={new Date(item?.created_at).toLocaleDateString()}
-              info={item?.quantity}
-              onPress={() => {
-                setQuantity(item?.quantity);
-                setSelectedDelivery(item);
-              }}
-            />
-          )}
+                        ? "bg-red-50 border border-red-200"
+                        : "bg-green-50 border border-green-200"
+                    } w-full h-full rounded-full flex items-center justify-center`}
+                  >
+                    <Icon
+                      name="checkcircle"
+                      size={20}
+                      color={
+                        item.type === DeliveryTypes.SUPPLY
+                          ? colors.red[500]
+                          : colors.green[500]
+                      }
+                    />
+                  </View>
+                }
+                title={
+                  item.type === DeliveryTypes.SUPPLY ? "Delivered" : "Collected"
+                }
+                description={`${new Date(
+                  item?.updatedAt
+                ).toLocaleDateString()} ${
+                  item?.updatedAt !== item?.created_at ? "- updated" : ""
+                }`}
+                info={item?.quantity}
+                onPress={() => {
+                  setQuantity(item?.quantity);
+                  setDate(item?.updatedAt);
+                  setSelectedDelivery(item);
+                }}
+              />
+            );
+          }}
           className="w-full h-full"
           showsHorizontalScrollIndicator={false}
         />
@@ -485,6 +511,44 @@ const ClientDetail = () => {
         </View>
       </Modal>
 
+      {/* Delete delivery */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={!!openDeliveryDeleteModal}
+        onRequestClose={() => {
+          setOpenDeliveryDeleteModal(null);
+        }}
+      >
+        <View className="flex-1 justify-center items-center bg-neutral-950/0 bg-opacity-50 shadow-md shadow-gray-400/30">
+          <View className="bg-white rounded-lg p-[20px] w-[90%]">
+            <Text className="text-2xl font-bold">Confirm?</Text>
+            <Text className="mt-3 text-gray-500">
+              Are you sure to delete this delivery?
+            </Text>
+            <View className="flex-row items-center gap-3 mt-5">
+              <TouchableOpacity
+                className="flex-1 bg-gray-300 rounded-lg justify-center items-center px-5 h-[40px]"
+                onPress={() => {
+                  setOpenDeliveryDeleteModal(null);
+                }}
+              >
+                <Text className="text-neutral-900">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-1 bg-red-500 rounded-lg justify-center items-center px-5 h-[40px]"
+                onPress={() => {
+                  handleDeleteDelivery();
+                  setOpenDeliveryDeleteModal(null);
+                }}
+              >
+                <Text className="text-neutral-50">Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -504,6 +568,7 @@ const ClientDetail = () => {
                 <Icon name="close" size={20} />
               </TouchableOpacity>
             </View>
+
             <FormInput
               placeholder="Quantity"
               label="Update Quantity"
@@ -513,7 +578,23 @@ const ClientDetail = () => {
               keyboardType="numeric"
               autoFocus={true}
             />
-            <View className="flex-row items-center gap-3">
+            <View className="mb-5">
+              <Text className="mb-2">Update Date</Text>
+              <DateTimePicker
+                value={
+                  date?.includes("T")
+                    ? new Date(date.split("T")[0])
+                    : new Date(date)
+                }
+                mode="date"
+                display="default"
+                onChange={(event: any, selectedDate: any) => {
+                  const currentDate = selectedDate || new Date(date);
+                  setDate(currentDate.toISOString().split("T")[0]);
+                }}
+              />
+            </View>
+            <View className="flex-row items-center gap-3 mt-3">
               <TouchableOpacity
                 className="flex-1"
                 onPress={() => {
@@ -524,12 +605,31 @@ const ClientDetail = () => {
                   Cancel
                 </Text>
               </TouchableOpacity>
+
+              {deleteDelivery && (
+                <TouchableOpacity
+                  className="flex-1"
+                  onPress={() => {
+                    const id = selectedDelivery?.id!;
+                    setSelectedDelivery(null);
+                    setQuantity(null);
+                    setDate(null);
+                    setOpenDeliveryDeleteModal(id);
+                  }}
+                >
+                  <Text className="text-lg font-semibold text-neutral-50 bg-red-500 border border-red-600 text-center rounded-lg py-3">
+                    Delete
+                  </Text>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
                 className="flex-1"
                 onPress={() => {
                   handleUpdateDelivery();
                   setSelectedDelivery(null);
                   setQuantity(null);
+                  setDate(null);
                 }}
               >
                 <Text className="text-lg font-semibold text-neutral-50 bg-primary border border-primary text-center rounded-lg py-3">
