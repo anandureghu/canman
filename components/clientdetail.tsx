@@ -28,6 +28,9 @@ import Icon from "react-native-vector-icons/AntDesign";
 import FAIcon from "react-native-vector-icons/FontAwesome";
 import FormInput from "./forminput";
 import InfoCard from "./infocard";
+
+const deleteDelivery = process.env.EXPO_PUBLIC_DELETE_DELIVERY === "true";
+
 const ClientDetail = () => {
   const clientService: IClientService = useMemo(() => new ClientService(), []);
   const deliveryService: IDeliveryService = useMemo(
@@ -50,6 +53,9 @@ const ClientDetail = () => {
   const [openSupplyModal, setOpenSupplyModal] = useState(false);
   const [openCollectModal, setOpenCollectModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openDeliveryDeleteModal, setOpenDeliveryDeleteModal] = useState<
+    null | string
+  >(null);
 
   const [quantity, setQuantity] = useState<any>(null);
   const [date, setDate] = useState<any>(null);
@@ -105,6 +111,18 @@ const ClientDetail = () => {
       // toast.error("Error updating delivery", {
       //   description: error instanceof Error ? error.message : "Unknown error",
       // });
+    }
+  };
+
+  const handleDeleteDelivery = async () => {
+    try {
+      await deliveryService.deleteDelivery(openDeliveryDeleteModal!);
+      const deliveries = await deliveryService.getDeliveriesByUserId(
+        id as string
+      );
+      setDeliveries(deliveries);
+    } catch (error) {
+      console.error("Error deleting delivery: ", error);
     }
   };
 
@@ -493,6 +511,44 @@ const ClientDetail = () => {
         </View>
       </Modal>
 
+      {/* Delete delivery */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={!!openDeliveryDeleteModal}
+        onRequestClose={() => {
+          setOpenDeliveryDeleteModal(null);
+        }}
+      >
+        <View className="flex-1 justify-center items-center bg-neutral-950/0 bg-opacity-50 shadow-md shadow-gray-400/30">
+          <View className="bg-white rounded-lg p-[20px] w-[90%]">
+            <Text className="text-2xl font-bold">Confirm?</Text>
+            <Text className="mt-3 text-gray-500">
+              Are you sure to delete this delivery?
+            </Text>
+            <View className="flex-row items-center gap-3 mt-5">
+              <TouchableOpacity
+                className="flex-1 bg-gray-300 rounded-lg justify-center items-center px-5 h-[40px]"
+                onPress={() => {
+                  setOpenDeliveryDeleteModal(null);
+                }}
+              >
+                <Text className="text-neutral-900">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-1 bg-red-500 rounded-lg justify-center items-center px-5 h-[40px]"
+                onPress={() => {
+                  handleDeleteDelivery();
+                  setOpenDeliveryDeleteModal(null);
+                }}
+              >
+                <Text className="text-neutral-50">Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -549,6 +605,24 @@ const ClientDetail = () => {
                   Cancel
                 </Text>
               </TouchableOpacity>
+
+              {deleteDelivery && (
+                <TouchableOpacity
+                  className="flex-1"
+                  onPress={() => {
+                    const id = selectedDelivery?.id!;
+                    setSelectedDelivery(null);
+                    setQuantity(null);
+                    setDate(null);
+                    setOpenDeliveryDeleteModal(id);
+                  }}
+                >
+                  <Text className="text-lg font-semibold text-neutral-50 bg-red-500 border border-red-600 text-center rounded-lg py-3">
+                    Delete
+                  </Text>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
                 className="flex-1"
                 onPress={() => {
