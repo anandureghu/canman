@@ -4,14 +4,16 @@ import { Text, TouchableOpacity, View } from "react-native";
 interface Props {
   title: string;
   description?: string;
-  info?: string;
-  subinfo?: string;
+  info?: string | React.ReactNode;
+  subinfo?: string | React.ReactNode;
   onPress?: () => void;
   icon?: React.ReactNode;
   infoStyle?: string;
   infoTextStyle?: string;
   subinfoStyle?: string;
   subinfoTextStyle?: string;
+  onInfoClick?: () => void;
+  onSubinfoClick?: () => void;
 }
 
 const InfoCard = ({
@@ -25,6 +27,8 @@ const InfoCard = ({
   subinfoStyle = "",
   infoTextStyle = "",
   subinfoTextStyle = "",
+  onInfoClick = () => {},
+  onSubinfoClick = () => {},
 }: Props) => {
   return (
     <TouchableOpacity onPress={onPress}>
@@ -52,22 +56,26 @@ const InfoCard = ({
         </View>
         <View className="flex flex-row gap-3">
           {info && (
-            <View
-              className={`bg-blue-50 border border-blue-100 min-w-[40px] h-[40px] p-3 rounded-lg items-center justify-center ${infoStyle}`}
-            >
-              <Text className={`text-blue-500 font-bold ${infoTextStyle}`}>
-                {info || "0"}
-              </Text>
-            </View>
+            <TouchableOpacity onPress={onInfoClick}>
+              <View
+                className={`bg-blue-50 border border-blue-100 min-w-[40px] h-[40px] p-3 rounded-lg items-center justify-center ${infoStyle}`}
+              >
+                <Text className={`text-blue-500 font-bold ${infoTextStyle}`}>
+                  {info || "0"}
+                </Text>
+              </View>
+            </TouchableOpacity>
           )}
           {subinfo && (
-            <View
-              className={`bg-blue-50 border border-blue-100 min-w-[40px] h-[40px] p-3 rounded-lg items-center justify-center ${subinfoStyle}`}
-            >
-              <Text className={`text-blue-500 font-bold ${subinfoTextStyle}`}>
-                {subinfo || "0"}
-              </Text>
-            </View>
+            <TouchableOpacity onPress={onSubinfoClick}>
+              <View
+                className={`bg-blue-50 border border-blue-100 min-w-[40px] h-[40px] p-3 rounded-lg items-center justify-center ${subinfoStyle}`}
+              >
+                <Text className={`text-blue-500 font-bold ${subinfoTextStyle}`}>
+                  {subinfo || "0"}
+                </Text>
+              </View>
+            </TouchableOpacity>
           )}
         </View>
       </View>
