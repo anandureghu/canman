@@ -109,7 +109,7 @@ const ClientDetail = () => {
       setDeliveries(deliveries);
       // toast.success("Delivery updated successfully");
     } catch (error) {
-      console.error("Error updating delivery");
+      console.error("Error updating delivery: ", error);
       // toast.error("Error updating delivery", {
       //   description: error instanceof Error ? error.message : "Unknown error",
       // });
@@ -370,7 +370,7 @@ const ClientDetail = () => {
                   item?.updatedAt !== item?.created_at ? "- updated" : ""
                 }`}
                 subinfo={item?.quantity}
-                onSubinfoClick={() => {
+                onPress={() => {
                   setQuantity(item?.quantity);
                   setDate(item?.updatedAt);
                   setSelectedDelivery(item);
@@ -594,7 +594,7 @@ const ClientDetail = () => {
               placeholder="Quantity"
               label="Update Quantity"
               onChangeText={(value) => setQuantity(value)}
-              value={quantity}
+              value={quantity || selectedDelivery?.quantity}
               className="mb-5"
               keyboardType="numeric"
               autoFocus={true}
@@ -619,7 +619,7 @@ const ClientDetail = () => {
               <TouchableOpacity
                 className="flex-1"
                 onPress={() => {
-                  setSelectedDelivery(null);
+                  setQuantity(null);
                 }}
               >
                 <Text className="text-lg font-semibold text-gray-900 border border-l-gray-900 text-center rounded-lg py-3">
