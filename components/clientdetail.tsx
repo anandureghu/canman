@@ -1,4 +1,5 @@
 import { colors } from "@/constants/colors";
+import { generatePdf } from "@/lib/invoice";
 import {
   ClientTypes,
   IClientService,
@@ -56,6 +57,7 @@ const ClientDetail = () => {
   const [openDeliveryDeleteModal, setOpenDeliveryDeleteModal] = useState<
     null | string
   >(null);
+  // const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   const [quantity, setQuantity] = useState<any>(null);
   const [date, setDate] = useState<any>(null);
@@ -107,7 +109,7 @@ const ClientDetail = () => {
       setDeliveries(deliveries);
       // toast.success("Delivery updated successfully");
     } catch (error) {
-      console.error("Error updating delivery");
+      console.error("Error updating delivery: ", error);
       // toast.error("Error updating delivery", {
       //   description: error instanceof Error ? error.message : "Unknown error",
       // });
@@ -219,8 +221,12 @@ const ClientDetail = () => {
                   size={24}
                   color={colors.green[500]}
                   onPress={async () => {
-                    const whatsappUrl = `whatsapp://send?phone=${client?.phone}&text=`;
-                    const waBusinessUrl = `https://wa.me/${client?.phone}?text`;
+                    const phone =
+                      client?.phone.length === 10
+                        ? `+91${client?.phone}`
+                        : client.phone;
+                    const whatsappUrl = `whatsapp://send?phone=${phone}&text=`;
+                    const waBusinessUrl = `https://wa.me/${phone}?text`;
 
                     try {
                       const canOpen = await Linking.canOpenURL(whatsappUrl);
@@ -282,6 +288,25 @@ const ClientDetail = () => {
             <Text className="text-lg font-semibold flex-[1]">
               {deliveries?.totalSupply || 0}
             </Text>
+          </View>
+
+          <View>
+            <TouchableOpacity
+              className="mt-5 bg-blue-500 rounded-lg px-5 py-3 flex-row items-center justify-center gap-3"
+              onPress={() => {
+                generatePdf(client, deliveries!);
+              }}
+            >
+              <FAIcon
+                name="file-text-o"
+                size={14}
+                className="font-bold"
+                color={colors.neutral[50]}
+              />
+              <Text className="text-neutral-50 text-center">
+                Generate Invoice
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -348,7 +373,7 @@ const ClientDetail = () => {
                 ).toLocaleDateString()} ${
                   item?.updatedAt !== item?.created_at ? "- updated" : ""
                 }`}
-                info={item?.quantity}
+                subinfo={item?.quantity}
                 onPress={() => {
                   setQuantity(item?.quantity);
                   setDate(item?.updatedAt);
@@ -552,9 +577,9 @@ const ClientDetail = () => {
       <Modal
         animationType="slide"
         transparent={true}
-        visible={selectedDelivery != null}
+        visible={quantity != null}
         onRequestClose={() => {
-          setSelectedDelivery(null);
+          setQuantity(null);
         }}
       >
         <View className="flex-1 justify-center items-center bg-neutral-950/0 bg-opacity-50 shadow-md shadow-gray-400/30">
@@ -562,7 +587,7 @@ const ClientDetail = () => {
             <View className="flex-row justify-end mb-5">
               <TouchableOpacity
                 onPress={() => {
-                  setSelectedDelivery(null);
+                  setQuantity(null);
                 }}
               >
                 <Icon name="close" size={20} />
@@ -573,7 +598,7 @@ const ClientDetail = () => {
               placeholder="Quantity"
               label="Update Quantity"
               onChangeText={(value) => setQuantity(value)}
-              value={quantity}
+              value={quantity || selectedDelivery?.quantity}
               className="mb-5"
               keyboardType="numeric"
               autoFocus={true}
@@ -598,7 +623,7 @@ const ClientDetail = () => {
               <TouchableOpacity
                 className="flex-1"
                 onPress={() => {
-                  setSelectedDelivery(null);
+                  setQuantity(null);
                 }}
               >
                 <Text className="text-lg font-semibold text-gray-900 border border-l-gray-900 text-center rounded-lg py-3">
