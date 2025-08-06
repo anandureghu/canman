@@ -221,8 +221,12 @@ const ClientDetail = () => {
                   size={24}
                   color={colors.green[500]}
                   onPress={async () => {
-                    const whatsappUrl = `whatsapp://send?phone=${client?.phone}&text=`;
-                    const waBusinessUrl = `https://wa.me/${client?.phone}?text`;
+                    const phone =
+                      client?.phone.length === 10
+                        ? `+91${client?.phone}`
+                        : client.phone;
+                    const whatsappUrl = `whatsapp://send?phone=${phone}&text=`;
+                    const waBusinessUrl = `https://wa.me/${phone}?text`;
 
                     try {
                       const canOpen = await Linking.canOpenURL(whatsappUrl);
