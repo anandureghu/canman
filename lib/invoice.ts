@@ -1,20 +1,14 @@
-import { colors } from "@/constants/colors";
 import { IClient } from "@/services/interfaces/client.services";
-import { IDelivery } from "@/services/interfaces/delivery.services";
+import { TDeliveryResponse } from "@/types/delivery.types";
+
 import * as Print from "expo-print";
-import { useFocusEffect } from "expo-router";
 import * as Sharing from "expo-sharing";
-import React, { useCallback, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-// import Pdf from "react-native-pdf";
 
-import Icon from "react-native-vector-icons/FontAwesome";
-
-interface Props {
-  delivery: IDelivery;
-  client: IClient;
-}
-const Invoice = ({ delivery, client }: Props) => {
+const generateTemplate = (
+  client: IClient,
+  deliveryDetails: TDeliveryResponse
+) => {
+  // template: https://github.com/sparksuite/simple-html-invoice-template
   const htmlContent = `
       <!DOCTYPE html>
 <html>
@@ -47,6 +41,11 @@ const Invoice = ({ delivery, client }: Props) => {
 			}
 
 			.invoice-box table tr td:nth-child(2) {
+				text-align: right;
+			}
+
+
+      .invoice-box table tr td:nth-child(3) {
 				text-align: right;
 			}
 
@@ -85,6 +84,12 @@ const Invoice = ({ delivery, client }: Props) => {
 			.invoice-box table tr.total td:nth-child(2) {
 				border-top: 2px solid #eee;
 				font-weight: bold;
+        text-align: right
+			}
+
+      .invoice-box table tr.total td:nth-child(1) {
+				border-top: 2px solid #eee;
+				font-weight: bold;
 			}
 
 			@media only screen and (max-width: 600px) {
@@ -121,7 +126,7 @@ const Invoice = ({ delivery, client }: Props) => {
 		<div class="invoice-box">
 			<table cellpadding="0" cellspacing="0">
 				<tr class="top">
-					<td colspan="2">
+					<td colspan="3">
 						<table>
 							<tr>
 								<td class="title">
@@ -129,8 +134,9 @@ const Invoice = ({ delivery, client }: Props) => {
 								</td>
 
 								<td>
-									Invoice #: ${delivery.id}<br />
-									Date: ${new Date().toLocaleDateString()}<br />
+									Invoice #: KLT${client.id + Date.now()}<br />
+									Date: ${new Date().toISOString()}<br />
+                  Client Type: ${client.type}<br />
 								</td>
 							</tr>
 						</table>
@@ -138,12 +144,12 @@ const Invoice = ({ delivery, client }: Props) => {
 				</tr>
 
 				<tr class="information">
-					<td colspan="2">
+					<td colspan="3">
 						<table>
 							<tr>
 								<td>
                   <strong>Billed To</strong><br />
-									${client?.name}<br />
+									${client?.name.split(" ")[0]}<br />
 									${client?.phone}<br />
 									${client?.address}
 								</td>
@@ -158,21 +164,38 @@ const Invoice = ({ delivery, client }: Props) => {
 					</td>
 				</tr>
 
-				<tr class="item">
+        <tr class="heading">
+					<td>Type</td>
 					<td>Quantity</td>
-					<td>${delivery?.quantity}</td>
-				</tr>
-        <tr class="item">
-					<td>Delivery Type</td>
-					<td>${delivery?.type}</td>
-				</tr>
-        <tr class="item">
-					<td>User Type</td>
-					<td>${client?.type}</td>
-				</tr>
-         <tr class="item">
 					<td>Date</td>
-					<td>${new Date(delivery?.updatedAt).toLocaleDateString()}</td>
+				</tr>
+
+				${deliveryDetails.deliveries.map((delivery, index) => {
+          return `<tr class="item">
+                    <td>${delivery.type}</td>
+                    <td>${delivery.quantity}</td>
+                    <td>${new Date(
+                      delivery.updatedAt
+                    ).toLocaleDateString()}</td>
+                  </tr>`;
+        })}
+
+        <tr class="total">
+					<td></td>
+					<td colspan="2">Total Delivered: ${deliveryDetails.totalSupply}</td>
+				</tr>
+
+        <tr class="total">
+					<td></td>
+					<td colspan="2">Total Collected: ${deliveryDetails.totalCollect}</td>
+				</tr>
+        
+        <tr class="total">
+					<td></td>
+					<td colspan="2">Pending: ${
+            (deliveryDetails.totalSupply || 0) -
+            (deliveryDetails.totalCollect || 0)
+          }</td>
 				</tr>
 			</table>
 		</div>
@@ -180,64 +203,24 @@ const Invoice = ({ delivery, client }: Props) => {
 </html>
     `;
 
-  const [uri, setUri] = useState("");
+  return htmlContent;
+};
 
-  const sharePdf = async (pdfUri: string) => {
-    if (pdfUri) {
-      await Sharing.shareAsync(pdfUri, {
+export const generatePdf = async (
+  client: IClient,
+  deliveryDetails: TDeliveryResponse
+) => {
+  try {
+    const { uri } = await Print.printToFileAsync({
+      html: generateTemplate(client, deliveryDetails!),
+    });
+    if (uri) {
+      await Sharing.shareAsync(uri, {
         UTI: ".pdf",
         mimeType: "application/pdf",
       });
     }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      const generatePdf = async () => {
-        try {
-          const { uri } = await Print.printToFileAsync({
-            html: htmlContent,
-          });
-          setUri(uri);
-          return uri;
-        } catch (error) {
-          console.error("Error generating PDF:", error);
-        }
-      };
-      generatePdf();
-
-      return () => {}; // Optional cleanup
-    }, [])
-  );
-
-  return (
-    <View className="w-fit">
-      <TouchableOpacity
-        onPress={() => {
-          sharePdf(uri);
-        }}
-      >
-        <View className="flex-row items-center justify-center gap-3">
-          <Text>Share Invoice</Text>
-          <Icon name="share-alt" size={24} color={colors.blue[500]} />
-        </View>
-      </TouchableOpacity>
-
-      {/* <Pdf
-        source={{ uri: uri }}
-        onError={(error) => console.error("PDF Error:", error)}
-        style={styles.pdf}
-      /> */}
-    </View>
-  );
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+  }
 };
-
-export default Invoice;
-
-const styles = StyleSheet.create({
-  pdf: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
-});

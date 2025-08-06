@@ -1,4 +1,5 @@
 import { colors } from "@/constants/colors";
+import { generatePdf } from "@/lib/invoice";
 import {
   ClientTypes,
   IClientService,
@@ -28,7 +29,6 @@ import Icon from "react-native-vector-icons/AntDesign";
 import FAIcon from "react-native-vector-icons/FontAwesome";
 import FormInput from "./forminput";
 import InfoCard from "./infocard";
-import Invoice from "./invoice";
 
 const deleteDelivery = process.env.EXPO_PUBLIC_DELETE_DELIVERY === "true";
 
@@ -57,7 +57,7 @@ const ClientDetail = () => {
   const [openDeliveryDeleteModal, setOpenDeliveryDeleteModal] = useState<
     null | string
   >(null);
-  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  // const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   const [quantity, setQuantity] = useState<any>(null);
   const [date, setDate] = useState<any>(null);
@@ -285,6 +285,25 @@ const ClientDetail = () => {
               {deliveries?.totalSupply || 0}
             </Text>
           </View>
+
+          <View>
+            <TouchableOpacity
+              className="mt-5 bg-blue-500 rounded-lg px-5 py-3 flex-row items-center justify-center gap-3"
+              onPress={() => {
+                generatePdf(client, deliveries!);
+              }}
+            >
+              <FAIcon
+                name="file-text-o"
+                size={14}
+                className="font-bold"
+                color={colors.neutral[50]}
+              />
+              <Text className="text-neutral-50 text-center">
+                Generate Invoice
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View className="flex-row justify-between w-full mt-5">
@@ -355,18 +374,6 @@ const ClientDetail = () => {
                   setQuantity(item?.quantity);
                   setDate(item?.updatedAt);
                   setSelectedDelivery(item);
-                }}
-                info={
-                  <FAIcon
-                    name="file-text-o"
-                    size={14}
-                    className="font-bold"
-                    color={colors.primary}
-                  />
-                }
-                onInfoClick={() => {
-                  setSelectedDelivery(item);
-                  setInvoiceOpen(true);
                 }}
               />
             );
@@ -650,36 +657,6 @@ const ClientDetail = () => {
                   Update
                 </Text>
               </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={invoiceOpen}
-        onRequestClose={() => {
-          setInvoiceOpen(false);
-        }}
-      >
-        <View className="flex-1 justify-center items-center bg-neutral-950/10 bg-opacity-50 shadow-md shadow-gray-400/30">
-          <View className="bg-white rounded-lg p-5 w-[90%] max-h-[90%] overflow-y-auto flex-row gap-5 items-center justify-center">
-            <TouchableOpacity
-              className="flex-row items-center justify-center gap-3"
-              onPress={() => {
-                setInvoiceOpen(false);
-              }}
-            >
-              <Text className="border border-primary rounded-lg px-10 py-3">
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <View className="border border-primary rounded-lg  py-2 px-3">
-              <Invoice
-                delivery={selectedDelivery as IDelivery}
-                client={client}
-              />
             </View>
           </View>
         </View>
