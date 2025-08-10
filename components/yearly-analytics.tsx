@@ -1,4 +1,3 @@
-import { generateYearsArray } from "@/lib/utils";
 import { ClientTypes } from "@/services/interfaces/client.services";
 import {
   DeliveryTypes,
@@ -8,7 +7,7 @@ import { DeliveryService } from "@/services/supabase/delivery.service";
 import { AnalyticsResponse } from "@/types/analytics.type";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import InfoCard from "./infocard";
 
 const YearlyAnalytics = () => {
@@ -17,8 +16,6 @@ const YearlyAnalytics = () => {
     []
   );
   const router = useRouter();
-  const years = useMemo(() => generateYearsArray(), []);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [data, setData] = useState<AnalyticsResponse | null>(null);
 
   useFocusEffect(
@@ -39,7 +36,7 @@ const YearlyAnalytics = () => {
       fetchYearlyData();
 
       return () => {}; // Optional cleanup
-    }, [selectedYear])
+    }, [])
   );
 
   return (
@@ -157,5 +154,3 @@ const YearlyAnalytics = () => {
 };
 
 export default YearlyAnalytics;
-
-const styles = StyleSheet.create({});

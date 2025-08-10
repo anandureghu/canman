@@ -54,9 +54,10 @@ const generateTemplate = (
 			}
 
 			.invoice-box table tr.top table td.title {
-				font-size: 45px;
+				font-size: 16px;
 				line-height: 45px;
 				color: #333;
+				text-transform: uppercase;
 			}
 
 			.invoice-box table tr.information table td {
@@ -130,13 +131,13 @@ const generateTemplate = (
 						<table>
 							<tr>
 								<td class="title">
-									<h1>INVOICE</h1>
+									<h1>Barrel supply and collection reciept</h1>
 								</td>
 
 								<td>
-									Invoice #: KLT${client.id + Date.now()}<br />
+									Invoice #: KLT-${client.id}-${Date.now()}<br />
 									Date: ${new Date().toISOString()}<br />
-                  Client Type: ${client.type}<br />
+                  Client Type: ${client.type || ""}<br />
 								</td>
 							</tr>
 						</table>
@@ -149,9 +150,9 @@ const generateTemplate = (
 							<tr>
 								<td>
                   <strong>Billed To</strong><br />
-									${client?.name.split(" ")[0]}<br />
-									${client?.phone}<br />
-									${client?.address}
+									${client?.name || " "}<br />
+									${client?.phone || " "}<br />
+									${client?.address || " "}
 								</td>
 
 								<td>
