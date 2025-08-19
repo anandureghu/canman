@@ -21,10 +21,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
+  Keyboard,
   Linking,
   Modal,
+  Platform,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
@@ -67,6 +70,7 @@ const ClientDetail = () => {
 
   const [quantity, setQuantity] = useState<any>(null);
   const [date, setDate] = useState<any>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
   const handleAddDelivery = async (quantity: string, type: TDeliveryTypes) => {
     const deliveryData = {
@@ -599,88 +603,131 @@ const ClientDetail = () => {
           setQuantity(null);
         }}
       >
-        <View className="flex-1 justify-center items-center bg-neutral-950/0 bg-opacity-50 shadow-md shadow-gray-400/30">
-          <View className="bg-white rounded-lg p-5 w-[90%]">
-            <View className="flex-row justify-end mb-5">
-              <TouchableOpacity
-                onPress={() => {
-                  setQuantity(null);
-                }}
-              >
-                <Icon name="close" size={20} />
-              </TouchableOpacity>
-            </View>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            Keyboard.dismiss();
+          }}
+        >
+          <View className="flex-1 justify-center items-center bg-neutral-950/0 bg-opacity-50 shadow-md shadow-gray-400/30">
+            <View className="bg-white rounded-lg p-5 w-[90%]">
+              <View className="flex-row justify-end mb-5">
+                <TouchableOpacity
+                  onPress={() => {
+                    setQuantity(null);
+                  }}
+                >
+                  <Icon name="close" size={20} />
+                </TouchableOpacity>
+              </View>
 
-            <FormInput
-              placeholder="Quantity"
-              label="Update Quantity"
-              onChangeText={(value) => setQuantity(value)}
-              value={quantity || selectedDelivery?.quantity}
-              className="mb-5"
-              keyboardType="numeric"
-              autoFocus={true}
-            />
-            <View className="mb-5">
-              <Text className="mb-2">Update Date</Text>
-              <DateTimePicker
-                value={
-                  date?.includes("T")
-                    ? new Date(date.split("T")[0])
-                    : new Date(date)
-                }
-                mode="date"
-                display="default"
-                onChange={(event: any, selectedDate: any) => {
-                  const currentDate = selectedDate || new Date(date);
-                  setDate(currentDate.toISOString().split("T")[0]);
-                }}
+              <FormInput
+                placeholder="Quantity"
+                label="Update Quantity"
+                onChangeText={(value) => setQuantity(value)}
+                value={quantity || selectedDelivery?.quantity}
+                className="mb-5"
+                keyboardType="numeric"
+                // autoFocus={true}
               />
-            </View>
-            <View className="flex-row items-center gap-3 mt-3">
-              <TouchableOpacity
-                className="flex-1"
-                onPress={() => {
-                  setQuantity(null);
-                }}
-              >
-                <Text className="text-lg font-semibold text-gray-900 border border-l-gray-900 text-center rounded-lg py-3">
-                  Cancel
-                </Text>
-              </TouchableOpacity>
+              <View className="mb-5">
+                {/* <Text className="mb-2">Update Date</Text> */}
+                {showPicker ? (
+                  <View>
+                    <DateTimePicker
+                      value={new Date(date)}
+                      mode="date"
+                      display="spinner"
+                      onChange={(event, selectedDate: any) => {
+                        if (event.type === "set") {
+                          const currentDate = selectedDate || new Date(date);
+                          setDate(currentDate.toISOString().split("T")[0]);
 
-              {deleteDelivery && (
+                          if (Platform.OS === "android") {
+                            setShowPicker(false);
+                          }
+                        } else {
+                          setShowPicker(false);
+                        }
+                      }}
+                    />
+                    {Platform.OS === "ios" && (
+                      <TouchableOpacity
+                        className="mt-2 bg-blue-500 rounded-lg px-5 py-3"
+                        onPress={() => {
+                          setShowPicker(false);
+                        }}
+                      >
+                        <Text className="text-neutral-50 text-center">
+                          Done
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : (
+                  <View>
+                    <Text>Update Date</Text>
+                    <View className="flex-row items-center gap-3 py-2 max-w-full">
+                      <Text className="p-3 border border-gray-200 rounded-md">
+                        {date?.split("T")[0]}
+                      </Text>
+                      <TouchableOpacity
+                        className=""
+                        onPress={() => {
+                          setShowPicker(true);
+                        }}
+                      >
+                        <Text className="text-primary text-center">Change</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </View>
+              <View className="flex-row items-center gap-3 mt-3">
                 <TouchableOpacity
                   className="flex-1"
                   onPress={() => {
-                    const id = selectedDelivery?.id!;
+                    setQuantity(null);
+                  }}
+                >
+                  <Text className="text-lg font-semibold text-gray-900 border border-l-gray-900 text-center rounded-lg py-3">
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+
+                {deleteDelivery && (
+                  <TouchableOpacity
+                    className="flex-1"
+                    onPress={() => {
+                      const id = selectedDelivery?.id!;
+                      setSelectedDelivery(null);
+                      setQuantity(null);
+                      setDate(null);
+                      setOpenDeliveryDeleteModal(id);
+                    }}
+                  >
+                    <Text className="text-lg font-semibold text-neutral-50 bg-red-500 border border-red-600 text-center rounded-lg py-3">
+                      Delete
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                <TouchableOpacity
+                  className="flex-1"
+                  onPress={() => {
+                    handleUpdateDelivery();
                     setSelectedDelivery(null);
                     setQuantity(null);
                     setDate(null);
-                    setOpenDeliveryDeleteModal(id);
                   }}
                 >
-                  <Text className="text-lg font-semibold text-neutral-50 bg-red-500 border border-red-600 text-center rounded-lg py-3">
-                    Delete
+                  <Text className="text-lg font-semibold text-neutral-50 bg-primary border border-primary text-center rounded-lg py-3">
+                    Update
                   </Text>
                 </TouchableOpacity>
-              )}
-
-              <TouchableOpacity
-                className="flex-1"
-                onPress={() => {
-                  handleUpdateDelivery();
-                  setSelectedDelivery(null);
-                  setQuantity(null);
-                  setDate(null);
-                }}
-              >
-                <Text className="text-lg font-semibold text-neutral-50 bg-primary border border-primary text-center rounded-lg py-3">
-                  Update
-                </Text>
-              </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </>
   );

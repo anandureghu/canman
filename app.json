@@ -37,12 +37,7 @@
       ],
       "@config-plugins/react-native-blob-util",
       "@config-plugins/react-native-pdf",
-      [
-        "expo-asset",
-        {
-          "assets": ["assets"]
-        }
-      ],
+      "expo-asset",
       "expo-web-browser"
     ],
     "experiments": {
