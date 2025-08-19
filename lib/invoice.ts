@@ -1,12 +1,14 @@
 import { IClient } from "@/services/interfaces/client.services";
 import { TDeliveryResponse } from "@/types/delivery.types";
+import { ImageResult } from "expo-image-manipulator";
 
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 
-const generateTemplate = (
+const generateTemplate = async (
   client: IClient,
-  deliveryDetails: TDeliveryResponse
+  deliveryDetails: TDeliveryResponse,
+  image: ImageResult
 ) => {
   // template: https://github.com/sparksuite/simple-html-invoice-template
   const htmlContent = `
@@ -131,7 +133,18 @@ const generateTemplate = (
 						<table>
 							<tr>
 								<td class="title">
-									<h1>Barrel supply and collection reciept</h1>
+									<div>
+										<div>
+											<img
+												src="data:image/png;base64,${image.base64}"
+												style="width: 50px; float: left; margin-right: 20px;" 
+											/>
+											<span style="font-size: 18px; font-weight: 600;">KALAYIL LATEX , MANNAMANGALAM</span>
+										</div>
+										<div>
+											<h1>Barrel supply and collection reciept</h1>
+										</div>
+									</div>
 								</td>
 
 								<td>
@@ -209,11 +222,12 @@ const generateTemplate = (
 
 export const generatePdf = async (
   client: IClient,
-  deliveryDetails: TDeliveryResponse
+  deliveryDetails: TDeliveryResponse,
+  image: ImageResult
 ) => {
   try {
     const { uri } = await Print.printToFileAsync({
-      html: generateTemplate(client, deliveryDetails!),
+      html: await generateTemplate(client, deliveryDetails!, image),
     });
     if (uri) {
       await Sharing.shareAsync(uri, {

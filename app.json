@@ -14,8 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo-filled.png",
-        "backgroundColor": "#ffffff",
-        "resizeMode": "contain"
+        "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.picominds.kalayillatextandtraders"
@@ -38,7 +37,13 @@
       ],
       "@config-plugins/react-native-blob-util",
       "@config-plugins/react-native-pdf",
-      "expo-asset"
+      [
+        "expo-asset",
+        {
+          "assets": ["assets"]
+        }
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

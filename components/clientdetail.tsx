@@ -14,6 +14,8 @@ import { ClientService } from "@/services/supabase/client.services";
 import { DeliveryService } from "@/services/supabase/delivery.service";
 import { TDeliveryResponse } from "@/types/delivery.types";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Asset } from "expo-asset";
+import { ImageResult, useImageManipulator } from "expo-image-manipulator";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -32,6 +34,8 @@ import InfoCard from "./infocard";
 
 const deleteDelivery = process.env.EXPO_PUBLIC_DELETE_DELIVERY === "true";
 
+const IMAGE = Asset.fromModule(require("@/assets/logo-filled.png"));
+
 const ClientDetail = () => {
   const clientService: IClientService = useMemo(() => new ClientService(), []);
   const deliveryService: IDeliveryService = useMemo(
@@ -49,6 +53,8 @@ const ClientDetail = () => {
     null
   );
 
+  const [imageResult, setImageResult] = useState<ImageResult | null>();
+  const context = useImageManipulator(IMAGE.uri);
   const router = useRouter();
 
   const [openSupplyModal, setOpenSupplyModal] = useState(false);
@@ -168,6 +174,17 @@ const ClientDetail = () => {
         console.error("Error deleting client: ", error);
       });
   };
+
+  const setLogo = async () => {
+    await IMAGE.downloadAsync();
+    const manipulatedImage = await context.renderAsync();
+    const result = await manipulatedImage.saveAsync({ base64: true });
+    setImageResult(result);
+  };
+
+  useEffect(() => {
+    setLogo();
+  }, []);
 
   return (
     <>
@@ -294,7 +311,7 @@ const ClientDetail = () => {
             <TouchableOpacity
               className="mt-5 bg-blue-500 rounded-lg px-5 py-3 flex-row items-center justify-center gap-3"
               onPress={() => {
-                generatePdf(client, deliveries!);
+                generatePdf(client, deliveries!, imageResult!);
               }}
             >
               <FAIcon
