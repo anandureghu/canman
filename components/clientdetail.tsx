@@ -63,6 +63,7 @@ const ClientDetail = () => {
   const [openSupplyModal, setOpenSupplyModal] = useState(false);
   const [openCollectModal, setOpenCollectModal] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [openDeliveryDeleteModal, setOpenDeliveryDeleteModal] = useState<
     null | string
   >(null);
@@ -399,6 +400,7 @@ const ClientDetail = () => {
                   setQuantity(item?.quantity);
                   setDate(item?.updatedAt);
                   setSelectedDelivery(item);
+                  setOpenUpdateModal(true);
                 }}
               />
             );
@@ -598,9 +600,10 @@ const ClientDetail = () => {
       <Modal
         animationType="slide"
         transparent={true}
-        visible={quantity != null}
+        visible={openUpdateModal}
         onRequestClose={() => {
           setQuantity(null);
+          setOpenUpdateModal(false);
         }}
       >
         <TouchableWithoutFeedback
@@ -614,6 +617,7 @@ const ClientDetail = () => {
                 <TouchableOpacity
                   onPress={() => {
                     setQuantity(null);
+                    setOpenUpdateModal(false);
                   }}
                 >
                   <Icon name="close" size={20} />
@@ -634,7 +638,7 @@ const ClientDetail = () => {
                 {showPicker ? (
                   <View>
                     <DateTimePicker
-                      value={new Date(date)}
+                      value={date ? new Date(date) : new Date()}
                       mode="date"
                       display="spinner"
                       onChange={(event, selectedDate: any) => {
@@ -687,6 +691,7 @@ const ClientDetail = () => {
                   className="flex-1"
                   onPress={() => {
                     setQuantity(null);
+                    setOpenUpdateModal(false);
                   }}
                 >
                   <Text className="text-lg font-semibold text-gray-900 border border-l-gray-900 text-center rounded-lg py-3">
@@ -703,6 +708,7 @@ const ClientDetail = () => {
                       setQuantity(null);
                       setDate(null);
                       setOpenDeliveryDeleteModal(id);
+                      setOpenUpdateModal(false);
                     }}
                   >
                     <Text className="text-lg font-semibold text-neutral-50 bg-red-500 border border-red-600 text-center rounded-lg py-3">
@@ -718,6 +724,7 @@ const ClientDetail = () => {
                     setSelectedDelivery(null);
                     setQuantity(null);
                     setDate(null);
+                    setOpenUpdateModal(false);
                   }}
                 >
                   <Text className="text-lg font-semibold text-neutral-50 bg-primary border border-primary text-center rounded-lg py-3">
