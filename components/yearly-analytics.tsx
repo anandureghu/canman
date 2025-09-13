@@ -1,4 +1,3 @@
-import { generateYearsArray } from "@/lib/utils";
 import { ClientTypes } from "@/services/interfaces/client.services";
 import {
   DeliveryTypes,
@@ -8,7 +7,7 @@ import { DeliveryService } from "@/services/supabase/delivery.service";
 import { AnalyticsResponse } from "@/types/analytics.type";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import InfoCard from "./infocard";
 
 const YearlyAnalytics = () => {
@@ -17,8 +16,6 @@ const YearlyAnalytics = () => {
     []
   );
   const router = useRouter();
-  const years = useMemo(() => generateYearsArray(), []);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [data, setData] = useState<AnalyticsResponse | null>(null);
 
   useFocusEffect(
@@ -39,7 +36,7 @@ const YearlyAnalytics = () => {
       fetchYearlyData();
 
       return () => {}; // Optional cleanup
-    }, [selectedYear])
+    }, [])
   );
 
   return (
@@ -89,11 +86,21 @@ const YearlyAnalytics = () => {
             });
           }}
         />
+
+        <InfoCard
+          title="Pending Stock"
+          info={(data?.supplied! - data?.collected!).toString() || "0"}
+          description="" // Replace with actual delivered value
+          infoStyle="bg-yellow-50 border border-yellow-500"
+          infoTextStyle="text-orange-700"
+        />
+
         <InfoCard
           title="Distributed"
           info={data?.distributed.toString() || "0"}
           description="" // Replace with actual delivered value
-          infoStyle="border-blue-500"
+          infoStyle="bg-red-50 border border-red-200"
+          infoTextStyle="text-red-500"
           onPress={() => {
             router.push({
               pathname: "/analytics_detail",
@@ -104,6 +111,35 @@ const YearlyAnalytics = () => {
               },
             });
           }}
+        />
+
+        <InfoCard
+          title="Distributed Returns"
+          info={data?.distributionCollected?.toString() || "0"}
+          description="" // Replace with actual delivered value
+          infoStyle="bg-green-50 border border-green-200"
+          infoTextStyle="text-green-500"
+          onPress={() => {
+            router.push({
+              pathname: "/analytics_detail",
+              params: {
+                clientType: ClientTypes.DISTRIBUTOR,
+                deliveryType: DeliveryTypes.COLLECT,
+                page: "Distributed",
+              },
+            });
+          }}
+        />
+
+        <InfoCard
+          title="Pending Distributed"
+          info={
+            (data?.distributed! - data?.distributionCollected!).toString() ||
+            "0"
+          }
+          description="" // Replace with actual delivered value
+          infoStyle="bg-yellow-50 border border-yellow-500"
+          infoTextStyle="text-orange-700"
         />
 
         <InfoCard
@@ -118,5 +154,3 @@ const YearlyAnalytics = () => {
 };
 
 export default YearlyAnalytics;
-
-const styles = StyleSheet.create({});

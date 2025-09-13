@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kalayil Latext & Traders",
     "slug": "kalayil-latext-and-traders",
-    "version": "0.0.1",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/logo-filled.png",
     "scheme": "kalayil-latext-and-traders",
@@ -34,7 +34,11 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "@config-plugins/react-native-blob-util",
+      "@config-plugins/react-native-pdf",
+      "expo-asset",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

@@ -7,6 +7,7 @@ interface Props extends React.ComponentProps<typeof TextInput> {
   value: string;
   onChangeText: (text: string) => void;
   className?: string;
+  // disabled?: boolean;
 }
 
 const FormInput: React.FC<Props> = ({
@@ -15,6 +16,7 @@ const FormInput: React.FC<Props> = ({
   value,
   onChangeText,
   className,
+  // disabled = false,
   ...rest
 }) => {
   return (
